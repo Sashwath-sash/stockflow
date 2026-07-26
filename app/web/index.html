@@ -1,0 +1,168 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>StockFlow — Inventory that never oversells</title>
+  <link rel="stylesheet" href="/static/styles.css">
+</head>
+<body>
+  <div class="shell">
+    <header class="topbar">
+      <a class="brand" href="#" data-view="store">
+        <span class="brand-mark">SF</span>
+        <span>StockFlow</span>
+      </a>
+      <nav>
+        <button class="nav-link active" data-view="store">Store</button>
+        <button class="nav-link auth-only hidden" data-view="orders">My orders</button>
+        <button class="nav-link admin-only hidden" data-view="admin">Operations</button>
+      </nav>
+      <div class="account">
+        <span id="user-chip" class="user-chip hidden"></span>
+        <button id="auth-button" class="button secondary">Sign in</button>
+      </div>
+    </header>
+
+    <main>
+      <section id="store-view" class="view active">
+        <div class="hero">
+          <div>
+            <span class="eyebrow">TRANSACTION-SAFE COMMERCE</span>
+            <h1>Inventory that stays correct under pressure.</h1>
+            <p>Browse live warehouse stock, reserve products atomically, and follow every order from payment to fulfilment.</p>
+          </div>
+          <div class="hero-stat">
+            <span class="pulse"></span>
+            <strong>Overselling protection active</strong>
+            <small>PostgreSQL row locks + immutable stock ledger</small>
+          </div>
+        </div>
+
+        <div class="section-heading">
+          <div>
+            <span class="eyebrow">LIVE CATALOGUE</span>
+            <h2>Available inventory</h2>
+          </div>
+          <button id="refresh-products" class="button ghost">Refresh stock</button>
+        </div>
+
+        <div id="product-grid" class="product-grid">
+          <div class="empty">Loading catalogue…</div>
+        </div>
+      </section>
+
+      <section id="orders-view" class="view">
+        <div class="section-heading">
+          <div>
+            <span class="eyebrow">ORDER HISTORY</span>
+            <h2>Your reservations</h2>
+          </div>
+          <button id="refresh-orders" class="button ghost">Refresh</button>
+        </div>
+        <div id="orders-list" class="stack"></div>
+      </section>
+
+      <section id="admin-view" class="view">
+        <div class="section-heading">
+          <div>
+            <span class="eyebrow">OPERATIONS CONTROL</span>
+            <h2>Warehouse command centre</h2>
+          </div>
+          <button id="refresh-admin" class="button ghost">Refresh dashboard</button>
+        </div>
+
+        <div class="metric-grid">
+          <article class="metric"><span>Products</span><strong id="metric-products">0</strong></article>
+          <article class="metric"><span>Available units</span><strong id="metric-available">0</strong></article>
+          <article class="metric"><span>Reserved units</span><strong id="metric-reserved">0</strong></article>
+          <article class="metric"><span>Orders</span><strong id="metric-orders">0</strong></article>
+        </div>
+
+        <div class="admin-grid">
+          <article class="panel">
+            <h3>Create product</h3>
+            <form id="product-form" class="form">
+              <label>SKU<input name="sku" placeholder="KEYBOARD-BLK" required></label>
+              <label>Name<input name="name" placeholder="Mechanical Keyboard" required></label>
+              <label>Price<input name="price" type="number" min="0.01" step="0.01" placeholder="3499.00" required></label>
+              <label>Description<textarea name="description" placeholder="Product details"></textarea></label>
+              <button class="button primary" type="submit">Create product</button>
+            </form>
+          </article>
+
+          <article class="panel">
+            <h3>Create warehouse</h3>
+            <form id="warehouse-form" class="form">
+              <label>Code<input name="code" placeholder="BLR-01" required></label>
+              <label>Name<input name="name" placeholder="Bengaluru Central" required></label>
+              <label>Location<input name="location" placeholder="Bengaluru, Karnataka" required></label>
+              <button class="button primary" type="submit">Create warehouse</button>
+            </form>
+          </article>
+
+          <article class="panel wide">
+            <h3>Adjust inventory</h3>
+            <form id="stock-form" class="form inline-form">
+              <label>Product<select name="product_id" id="stock-product" required></select></label>
+              <label>Warehouse<select name="warehouse_id" id="stock-warehouse" required></select></label>
+              <label>Quantity change<input name="quantity_delta" type="number" placeholder="25" required></label>
+              <label>Reason<input name="reason" placeholder="Supplier delivery" required></label>
+              <button class="button primary" type="submit">Apply adjustment</button>
+            </form>
+          </article>
+        </div>
+
+        <div class="split">
+          <article class="panel">
+            <div class="panel-heading"><h3>Current inventory</h3><span>Available / reserved</span></div>
+            <div id="inventory-list" class="table-list"></div>
+          </article>
+          <article class="panel">
+            <div class="panel-heading"><h3>Recent orders</h3><span>Operational queue</span></div>
+            <div id="admin-orders-list" class="table-list"></div>
+          </article>
+        </div>
+
+        <article class="panel ledger-panel">
+          <div class="panel-heading"><h3>Inventory ledger</h3><span>Immutable movement history</span></div>
+          <div id="ledger-list" class="table-list"></div>
+        </article>
+      </section>
+    </main>
+  </div>
+
+  <aside id="cart-drawer" class="drawer">
+    <div class="drawer-header"><h2>Reservation cart</h2><button id="close-cart" class="icon-button">×</button></div>
+    <div id="cart-items" class="cart-items"></div>
+    <div class="cart-footer">
+      <div><span>Total</span><strong id="cart-total">₹0.00</strong></div>
+      <button id="checkout-button" class="button primary full">Reserve inventory</button>
+    </div>
+  </aside>
+  <button id="cart-button" class="cart-button"><span>Cart</span><strong id="cart-count">0</strong></button>
+
+  <div id="auth-modal" class="modal">
+    <div class="modal-card">
+      <button id="close-auth" class="icon-button modal-close">×</button>
+      <span class="eyebrow">ACCOUNT ACCESS</span>
+      <h2 id="auth-title">Sign in to StockFlow</h2>
+      <form id="login-form" class="form">
+        <label>Email<input name="email" type="email" required></label>
+        <label>Password<input name="password" type="password" required></label>
+        <button class="button primary full" type="submit">Sign in</button>
+      </form>
+      <form id="register-form" class="form hidden">
+        <label>Full name<input name="full_name" required></label>
+        <label>Email<input name="email" type="email" required></label>
+        <label>Password<input name="password" type="password" minlength="8" required></label>
+        <button class="button primary full" type="submit">Create account</button>
+      </form>
+      <button id="toggle-auth" class="text-button">Need an account? Register</button>
+    </div>
+  </div>
+
+  <div id="toast" class="toast"></div>
+  <script src="/static/app.js"></script>
+</body>
+</html>
