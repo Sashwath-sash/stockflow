@@ -52,6 +52,7 @@ Then open:
 - Storefront and dashboard: http://localhost:8000
 - Interactive API documentation: http://localhost:8000/docs
 - Health check: http://localhost:8000/health
+- Database readiness check: http://localhost:8000/health/ready
 
 The development administrator is configured through `.env`. Never commit `.env` or
 reuse its password in a deployed environment.
