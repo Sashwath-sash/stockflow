@@ -14,7 +14,6 @@ from app.api.orders import router as orders_router
 from app.bootstrap import create_development_admin
 from app.config import settings
 
-
 WEB_DIR = Path(__file__).parent / "web"
 
 
