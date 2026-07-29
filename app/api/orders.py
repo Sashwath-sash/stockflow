@@ -2,7 +2,7 @@ import uuid
 from datetime import UTC, datetime
 from typing import Annotated
 
-from fastapi import APIRouter, Header, HTTPException, Response, status
+from fastapi import APIRouter, Header, HTTPException, Query, Response, status
 from sqlalchemy import select
 from sqlalchemy.orm import selectinload
 
@@ -135,14 +135,23 @@ def cancel_order(
 
 
 @admin_router.get("", response_model=list[OrderResponse])
-def list_all_orders(db: DbSession, _admin: AdminUser) -> list[Order]:
-    return list(
-        db.scalars(
-            select(Order)
-            .options(selectinload(Order.items))
-            .order_by(Order.created_at.desc())
-        ).all()
+def list_all_orders(
+    db: DbSession,
+    _admin: AdminUser,
+    order_status: Annotated[OrderStatus | None, Query(alias="status")] = None,
+    limit: Annotated[int, Query(ge=1, le=100)] = 50,
+    offset: Annotated[int, Query(ge=0)] = 0,
+) -> list[Order]:
+    statement = (
+        select(Order)
+        .options(selectinload(Order.items))
+        .order_by(Order.created_at.desc())
+        .limit(limit)
+        .offset(offset)
     )
+    if order_status is not None:
+        statement = statement.where(Order.status == order_status)
+    return list(db.scalars(statement).all())
 
 
 @admin_router.post("/{order_id}/fulfil", response_model=OrderResponse)
@@ -190,4 +199,3 @@ def fulfil_order(
     if refreshed is None:
         raise HTTPException(status_code=500, detail="Order could not be loaded")
     return refreshed
-
