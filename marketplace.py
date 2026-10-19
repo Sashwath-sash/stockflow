@@ -178,14 +178,19 @@ def register(
 def authenticate(factory, email: str, password: str) -> Account | None:
     with session_scope(factory) as db:
         account = db.scalar(select(Account).where(Account.email == email.strip().lower()))
-        if account and password_hash.verify(password, account.password_digest):
+        if (
+            account
+            and account.role in {"seller", "buyer"}
+            and password_hash.verify(password, account.password_digest)
+        ):
             return account
     return None
 
 
 def get_account(factory, account_id: int) -> Account | None:
     with session_scope(factory) as db:
-        return db.get(Account, account_id)
+        account = db.get(Account, account_id)
+        return account if account and account.role in {"seller", "buyer"} else None
 
 
 def update_seller_profile(

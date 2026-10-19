@@ -53,7 +53,7 @@ with st.sidebar:
     if account:
         st.write(f"Signed in as **{account.name}**")
         st.caption(account.role.capitalize())
-        if st.button("Sign out", use_container_width=True):
+        if st.button("Sign out", width="stretch"):
             del st.session_state["account_id"]
             st.rerun()
     else:
@@ -106,7 +106,7 @@ with shop_tab:
                             key=f"quantity_{item.id}",
                         )
                         note = st.text_input("Note to seller (optional)", key=f"note_{item.id}")
-                        if st.form_submit_button("Request order", use_container_width=True):
+                        if st.form_submit_button("Request order", width="stretch"):
                             try:
                                 order = place_order(
                                     factory, account.id, item.id, int(quantity), note
@@ -190,7 +190,7 @@ if account and account.role == "seller":
                     }
                     for item in inventory
                 ],
-                use_container_width=True,
+                width="stretch",
                 hide_index=True,
             )
         if low_stock:
@@ -211,7 +211,7 @@ if account and account.role == "seller":
                     }
                     for m in movements
                 ],
-                use_container_width=True,
+                width="stretch",
                 hide_index=True,
             )
         else:

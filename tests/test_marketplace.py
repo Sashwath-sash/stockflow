@@ -3,15 +3,19 @@ from decimal import Decimal
 import pytest
 
 from marketplace import (
+    Account,
     adjust_stock,
+    authenticate,
     change_order_status,
     create_listing,
+    get_account,
     make_session_factory,
     orders_for,
     place_order,
     public_listings,
     register,
     seller_listings,
+    session_scope,
     stock_movements,
     update_listing,
 )
@@ -124,3 +128,11 @@ def test_hidden_listing_not_public_and_ownership_enforced(marketplace):
         active=False,
     )
     assert public_listings(factory) == []
+
+
+def test_disabled_account_cannot_sign_in(marketplace):
+    factory, seller, _, _, _ = marketplace
+    with session_scope(factory) as db:
+        db.get(Account, seller.id).role = "disabled"
+    assert authenticate(factory, seller.email, "secret123") is None
+    assert get_account(factory, seller.id) is None
