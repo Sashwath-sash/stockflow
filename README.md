@@ -158,6 +158,42 @@ flowchart LR
 
 ## Run Locally
 
+### Streamlit seller inventory app
+
+The repository also includes `streamlit_app.py`, a public catalog plus a seller-first
+inventory dashboard. Sellers can create their own shops, publish products, record stock
+movements with reasons, set low-stock alerts, and manage their own incoming orders. Buyers
+have separate accounts and can request or cancel orders. A requested order reserves stock;
+cancellation restores it. This flow does not charge payments or arrange shipping.
+
+The Streamlit app uses separate `marketplace_*` tables so it can coexist with the original
+FastAPI service. Its data must be in a shared, persistent PostgreSQL database for public use.
+Streamlit Community Cloud's local filesystem is not persistent storage.
+
+To run locally:
+
+```powershell
+python -m venv .venv
+.\.venv\Scripts\Activate.ps1
+pip install -r requirements.txt
+$env:STOCKFLOW_DATABASE_URL = "sqlite:///stockflow_marketplace.db"
+streamlit run streamlit_app.py
+```
+
+For public deployment, create a managed PostgreSQL database, then in Streamlit Community
+Cloud choose this repository, branch `main`, and entry point `streamlit_app.py`. Add this
+secret in the app's Advanced settings (never commit the real URL):
+
+```toml
+STOCKFLOW_DATABASE_URL = "postgresql://USER:PASSWORD@HOST/DATABASE?sslmode=require"
+```
+
+The app creates its own marketplace tables on first run. Keep the database URL secret;
+shop details entered by sellers and product listings are public, while sign-in emails are
+only visible to account owners and the seller receiving a buyer's order.
+
+### Original FastAPI service
+
 ### Requirements
 
 - Docker Desktop with the Linux engine running
