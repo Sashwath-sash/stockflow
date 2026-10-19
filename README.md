@@ -11,7 +11,46 @@ Built with FastAPI, PostgreSQL, SQLAlchemy, JWT authentication, and Docker.
 [![FastAPI](https://img.shields.io/badge/FastAPI-API-009688?logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com/)
 [![PostgreSQL](https://img.shields.io/badge/PostgreSQL-17-4169E1?logo=postgresql&logoColor=white)](https://www.postgresql.org/)
 
-## Overview
+## Public inventory app
+
+**Open the app:** [stockflow-sashwath.streamlit.app](https://stockflow-sashwath.streamlit.app/)
+
+The deployed Streamlit app is a seller inventory manager with a public product shop.
+Anyone can browse listings. Sellers manage only their own products and orders; buyers
+have separate accounts and see their own orders. Data is stored in PostgreSQL, so it
+persists across app restarts and is shared by visitors.
+
+### How to use it as a seller
+
+1. Open the app, choose **Create account**, select **Sell products**, and enter your name,
+   email, password, and shop name. The optional shop location and contact details are
+   public; your sign-in email is private.
+2. In **Products & stock**, expand **Add a product**. Enter its name, description,
+   category, unit price, currency, starting stock, and low-stock alert threshold. Select
+   **Publish listing** to show it in the public shop.
+3. Use **Inventory dashboard** to see total products, units in stock, low-stock alerts,
+   open orders, and recent stock movements.
+4. In **Products & stock**, expand a product to record stock received or removed with a
+   reason. You can also edit its details or clear **Visible in public shop** to hide it.
+5. In **Seller orders**, review requests from buyers. Mark an order fulfilled after you
+   handle it, or select **Cancel and restock** to return its units to inventory.
+6. Use **Shop profile** to update the shop name, location, or public contact details.
+
+### How to use it as a buyer
+
+1. Browse and search products in **Shop** without an account.
+2. To order, choose **Create account** and select **Buy products**, or sign in to an
+   existing buyer account.
+3. In **Shop**, choose a quantity and optionally add a note to the seller, then select
+   **Request order**. The requested quantity is removed from available stock.
+4. In **My orders**, follow the order status or cancel a requested order. Cancellation
+   restores its stock.
+
+Orders are requests to sellers. **The app does not collect payments or arrange shipping.**
+Each seller's public shop name, location, and contact details appear with their listings;
+the seller sees the buyer's name and email on orders for that seller's shop.
+
+## Original FastAPI service
 
 StockFlow models the backend workflow used by inventory-based commerce systems.
 Customers can reserve available products and complete or cancel orders. Administrators
